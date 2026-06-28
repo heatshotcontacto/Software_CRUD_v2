@@ -1,150 +1,123 @@
-# Sistema de Gestión de Usuarios — Universidad de Cuenca
+# Software_CRUD_v2
 
-Proyecto académico que integra dos asignaturas: **Bases de Datos** (diseño e implementación
-del modelo relacional completo de la institución) y **Programación** (desarrollo de un
-sistema CRUD en Python con interfaz gráfica para la gestión de la tabla `usuarios`).
+Sistema CRUD de gestión de usuarios desarrollado en Python (PyQt5) con MySQL como motor de
+base de datos, hecho como proyecto académico para la Universidad de Cuenca.
 
-## Descripción general
+La aplicación permite crear, leer, actualizar y eliminar usuarios a partir de personas ya
+registradas en la base de datos: el rol (estudiante, docente o administrativo) y el nombre de
+usuario se determinan y generan automáticamente, sin intervención manual.
 
-La Universidad de Cuenca requiere un sistema para gestionar el acceso de su comunidad
-académica (estudiantes, docentes y administrativos) a su plataforma tecnológica. La base de
-datos almacena la ficha completa de cada persona, sus roles, los servicios tecnológicos que
-ofrece la universidad, y el registro de accesos y reservas a dichos servicios.
+## Características
 
-La aplicación desarrollada en Python consume esa base de datos y permite **crear, leer,
-actualizar y eliminar usuarios**, con la particularidad de que un usuario no se registra con
-datos nuevos: se *activa* a partir de una persona que ya existe en la tabla `personas`,
-heredando su cédula y determinando su rol automáticamente según en qué tabla de
-especialización (estudiantes, docentes o administrativos) se encuentre.
+- Arquitectura en capas (DAO / Modelo / Validadores / Controlador / UI).
+- Generación automática de `nombre_usuario` en formato `primernombre.primerapellido`, con
+  normalización de tildes/`ñ` y manejo de colisiones (nombres repetidos).
+- Determinación automática del rol según la tabla de especialización a la que pertenece la
+  persona (`estudiantes`, `docentes`, `administrativos`).
+- Validaciones de contraseña segura, unicidad de usuario, formato de cédula y estado.
+- Interfaz gráfica construida en Qt Designer, con 5 pestañas: Buscar Personas, Buscar Usuario,
+  Agregar Usuarios, Actualizar Usuarios y Borrar Usuario.
 
-## Tecnologías utilizadas
+## Tecnologías
 
-| Categoría | Herramienta |
-|---|---|
-| Lenguaje | Python 3.11 |
-| Interfaz gráfica | PyQt5 5.15.11 (diseñada en Qt Designer) |
-| Base de datos | MySQL 9.7.0 |
-| Conector | mysql-connector-python 9.3.0 |
-| Modelado de datos | ERD Plus |
-| Empaquetado | PyInstaller |
-| IDE | Visual Studio Code |
+- Python 3.11
+- PyQt5 5.15.11
+- mysql-connector-python 9.3.0
+- MySQL 9.7.0
 
 ## Estructura del proyecto
 
+```
 Software_CRUD_v2/
 │
 ├── controllers/
-│   └── usuario_controller.py      # Lógica que conecta UI ↔ DAO
-│
+│   └── usuario_controller.py
 ├── dao/
-│   └── usuario_dao.py             # Operaciones CRUD contra la BD
-│
+│   └── usuario_dao.py
 ├── database/
-│   ├── conexion.py                # Conexión a la BD
-│   └── universidad.sql            # Script SQL
-│
+│   ├── conexion.py
+│   └── universidad.sql
 ├── models/
-│   └── usuario.py                 # Clase/modelo de datos Usuario
-│
+│   └── usuario.py
 ├── resources/
-│   ├── icons/                     # Íconos .png / .svg
-│   └── style.qss                  # Hoja de estilos Qt
-│
+│   └── icons/
 ├── ui/
-│   ├── usuarios_ui.py             # Generado desde el .ui (pyuic5/pyside6)
-│   └── usuarios.ui                # Diseño Qt Designer (solo visual)
-│
+│   ├── usuarios.ui
+│   └── usuarios_ui.py
 ├── validators/
-│   └── usuario_validator.py       # Todas las validaciones
-│
-├── main.py                        # Punto de entrada de la aplicación
-├── README.md                      # Información general del proyecto
-└── requirements.txt               # Dependencias del proyecto
+│   └── usuario_validator.py
+├── main.py
+├── README.md
+└── requirements.txt
+```
 
-## Modelo de base de datos
+## Instalación
 
-La base de datos `universidad_cuenca` está normalizada al menos hasta 3FN e incluye:
+1. Clonar el repositorio:
+   ```
+   git clone https://github.com/heatshotcontacto/Software_CRUD_v2.git
+   cd Software_CRUD_v2
+   ```
 
-- **Geografía**: `pais`, `provincia`, `canton`, `parroquia`
-- **Personas**: `personas` (ficha base) con especializaciones en `estudiantes`, `docentes`,
-  `administrativos`
-- **Académico**: `carreras`, `area`
-- **Acceso al sistema**: `roles`, `usuarios`
-- **Servicios tecnológicos**: `tipo_servicio`, `servicios_tecnologicos`, `accesos`, `reservas`
+2. (Opcional pero recomendado) Crear un entorno virtual:
+   ```
+   python -m venv venv
+   venv\Scripts\activate
+   ```
 
-La tabla `usuarios` se relaciona con `personas` (por `cedula`, `UNIQUE`) y con `roles` (por
-`codigo_rol`), y tiene una restricción `CHECK` que limita `roles.nombre_rol` únicamente a
-`'estudiante'`, `'docente'` o `'administrativo'`.
+3. Instalar las dependencias:
+   ```
+   pip install -r requirements.txt
+   ```
 
-## Funcionalidad del CRUD
+4. Crear la base de datos ejecutando el script `database/universidad.sql` en tu motor MySQL.
+   **Nota:** este script solo contiene la estructura de las tablas (sin datos de ejemplo); los
+   registros de prueba debes cargarlos tú mismo, ya sea manualmente o usando la propia
+   aplicación.
 
-La aplicación cuenta con 5 pestañas:
+5. Configurar tus propias credenciales de conexión en `database/conexion.py` (host, usuario,
+   contraseña y nombre de la base de datos). **Importante:** no subas tus credenciales reales
+   al repositorio si haces un fork o un commit propio.
 
-1. **Buscar Personas** — lista todas las personas registradas (cédula, nombres, apellidos,
-   correo) indicando si ya tienen un usuario creado o no. Existe porque no se puede crear un
-   usuario sin conocer de antemano la cédula de la persona.
-2. **Buscar Usuario** — consulta un usuario puntual o lista todos los registrados.
-3. **Agregar Usuarios** — se ingresa una cédula; el sistema busca a la persona en `personas`,
-   determina su rol automáticamente, y genera el nombre de usuario y la fecha de creación.
-   Solo se solicitan la contraseña y el estado.
-4. **Actualizar Usuarios** — se busca por nombre de usuario; únicamente se permite modificar
-   la contraseña y el estado (los demás datos pertenecen a otras tablas y no se editan desde
-   aquí).
-5. **Borrar Usuario** — elimina un registro, con confirmación previa.
-
-### Generación automática de nombre de usuario
-
-El nombre de usuario se construye como `primernombre.primerapellido`, normalizado a minúsculas
-y sin tildes/`ñ` (ej. *Bajaña* → `bajana`). Si el nombre ya existe, se agrega un número
-incremental al final (`samuel.vallejo`, `samuel.vallejo1`, `samuel.vallejo2`...), para soportar
-personas con nombre y apellido idénticos.
-
-## Validaciones implementadas
-
-- Contraseña segura: mínimo 8 caracteres, una mayúscula, una minúscula y un número.
-- Nombre de usuario único, verificado contra la base de datos.
-- Cédula con formato válido (10 dígitos numéricos).
-- Estado restringido a `activo` / `inactivo`.
-- Verificación de que la persona exista y no tenga ya un usuario antes de crear uno nuevo.
-- Validación en tiempo real en los campos de entrada.
-- Manejo de errores de conexión y de integridad referencial, sin que la aplicación se cierre
-  de forma abrupta.
-
-## Manejo de errores destacado
-
-Durante el desarrollo se identificó un conflicto a nivel de librerías nativas entre PyQt5 y
-`mysql-connector-python` en Windows, que provocaba el cierre abrupto de la aplicación sin
-mostrar ningún error en consola. Se resolvió forzando al conector de MySQL a usar su
-implementación pura en Python (`use_pure=True` en la conexión), evitando así el conflicto de
-extensiones en C de ambas librerías.
-
-## Instalación y ejecución
-
-1. Instalar las dependencias:
-pip install -r requirements.txt
-2. Crear la base de datos ejecutando `database/universidad.sql` en MySQL.
-3. Configurar las credenciales de conexión en `database/conexion.py`.
-4. Ejecutar la aplicación:
-python main.py
+6. Ejecutar la aplicación:
+   ```
+   python main.py
+   ```
 
 ## Qt Designer (pyqt5-tools)
 
-`pyqt5-tools` incluye el ejecutable de Qt Designer, necesario para abrir y editar el archivo
-`ui/usuarios.ui` visualmente.
+`pyqt5-tools` permite abrir y editar visualmente el archivo `ui/usuarios.ui`.
 
-1. Instalarlo (ya viene incluido en `requirements.txt`, pero también se puede instalar solo):
+```
 pip install pyqt5-tools
-2. Abrir Qt Designer desde la terminal:
 pyqt5-tools designer
-Si ese comando no es reconocido, el ejecutable también se puede ubicar manualmente en:
-<carpeta_del_entorno>\Lib\site-packages\qt5_applications\Qt\bin\designer.exe
-3. Tras editar el `.ui`, regenerar el archivo Python correspondiente:
+```
+
+Si el comando no es reconocido, el ejecutable de Designer también puede ubicarse en:
+```
+<entorno_virtual>\Lib\site-packages\qt5_applications\Qt\bin\designer.exe
+```
+
+Después de editar el `.ui`, regenera el archivo Python:
+```
 pyuic5 ui/usuarios.ui -o ui/usuarios_ui.py
+```
 
-## Generar el ejecutable
+## Generar ejecutable (PyInstaller)
 
-pip install pyinstaller pyinstaller --clean --onefile --windowed main.py
-El ejecutable resultante queda en la carpeta `dist/`.
+```
+pip install pyinstaller
+pyinstaller --clean --onefile --windowed main.py
+```
+
+El ejecutable se genera en la carpeta `dist/`.
+
+## Notas técnicas
+
+Se detectó un conflicto de librerías nativas entre PyQt5 y `mysql-connector-python` en Windows
+que provocaba el cierre abrupto de la aplicación sin mensaje de error. Se solucionó forzando
+al conector a usar su implementación pura en Python, agregando `use_pure=True` en los
+parámetros de conexión dentro de `database/conexion.py`.
 
 ## Autores
 
@@ -152,5 +125,3 @@ El ejecutable resultante queda en la carpeta `dist/`.
 - Cristian Teodoro Marín Guachichullca
 - Alexander Francisco Guamán Congo
 - Samuel Felipe Vallejo Morales
-
-Universidad de Cuenca — Proyecto Final de Bases de Datos y Programación.
