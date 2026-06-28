@@ -127,9 +127,5 @@ que provocaba el cierre abrupto de la aplicación sin mensaje de error. Se soluc
 al conector a usar su implementación pura en Python, agregando `use_pure=True` en los
 parámetros de conexión dentro de `database/conexion.py`.
 
-## Autores
-
-- Michael José Bajaña Espinoza
-- Cristian Teodoro Marín Guachichullca
-- Alexander Francisco Guamán Congo
-- Samuel Felipe Vallejo Morales
+## Autor
+### sxmuel.vm
