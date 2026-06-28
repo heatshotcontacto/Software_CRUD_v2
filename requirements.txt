@@ -1,0 +1,4 @@
+PyQt5==5.15.11 
+mysql-connector-python==9.3.0 
+# pyqt5-tools
+# pyinstaller
